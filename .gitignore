@@ -2,7 +2,7 @@
 .gradle/
 build/
 
-assets/server.json
+app/src/main/assets/servers.json
 
 # Local configuration file (sdk path, etc)
 local.properties

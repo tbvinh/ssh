@@ -1,0 +1,4 @@
+[
+  {"user": "lx3", "pwd":"4444", "host":"dev.cccc.info", "command": "sql=0099"},
+  {"user": "lx44r", "pwd":"3333", "host":"cccp.com", "command": "sql=0099\nbuild-test \n build-live\nbackup-db\nrestart-live\nrestart-test"}
+]

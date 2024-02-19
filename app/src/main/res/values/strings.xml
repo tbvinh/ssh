@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">MyNail360SSH</string>
+    <string name="service_name">VinhTranService</string>
+    <string name="service_label">NotificationListenerExampleService</string>
+
+    <!-- Strings related to the Alert Dialog -->
+    <string name="notification_listener_service">"Notification Listener Service"</string>
+    <string name="notification_listener_service_explanation">"For the the app. to work you need to enable the Notification Listener Service. Enable it now?"</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="voice_recognition_prompt">Prompt</string>
+    <string name="speak_button">Speak</string>
+    <string name="supported_languages">Lang</string>
+    <string name="language_preference">Lang Ref</string>
 </resources>

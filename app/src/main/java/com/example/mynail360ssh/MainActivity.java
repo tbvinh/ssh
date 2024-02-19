@@ -1,8 +1,13 @@
 package com.example.mynail360ssh;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -13,6 +18,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
@@ -30,11 +36,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
+    private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
+    private AlertDialog enableNotificationListenerAlertDialog;
 
     private EditText etUsername;
     private EditText etPassword;
     private EditText etHost;
     private Button btnLogin;
+    private Button btnVoice;
     private TextView tvConsole;
     private Button btnClearConsole;
     private Button btnExecute;
@@ -50,8 +60,22 @@ public class MainActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.et_password);
         etHost = findViewById(R.id.et_host);
         btnLogin = findViewById(R.id.btn_login);
+
         tvConsole = findViewById(R.id.tv_console);
         btnClearConsole = findViewById(R.id.btn_clear_console);
+
+        try {
+            btnVoice = findViewById(R.id.cmdVoice);
+            btnVoice.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(getApplicationContext(), VoiceCommand.class);
+                    startActivity(i);
+                }
+            });
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,12 +111,14 @@ public class MainActivity extends AppCompatActivity {
                 String cmd = command;
                 if(command.startsWith("sql=")){
                     cmd = command.replace("sql=", "~/sql-update.sh ");
+                } else if (command.startsWith("execsql=")) {
+                    cmd = command.replace("execsql=","cd ~/lxerp &&./update-source.sh &&./execute-sql.sh ");
                 } else if (command.startsWith("backup-db")) {
                     cmd = "cd ~/backup && ./backup-db.sh";
                 } else if (command.startsWith("build-test")) {
-                    cmd="cd ~/lxerp-test; ./build-lexorInfo.sh ";
+                    cmd="cd ~/lxerp-test && ./build-lexorInfo.sh ";
                 } else if (command.startsWith("build-live")) {
-                    cmd="cd ~/lxerp; ./build-lexorInfo.sh ";
+                    cmd="cd ~/lxerp && ./build-lexorInfo.sh ";
                 }else if (command.startsWith("restart-live")) {
                     cmd="~/glassfish5/bin/asadmin restart-domain domain1";
                 }else if (command.startsWith("restart-test")) {
@@ -145,6 +171,11 @@ public class MainActivity extends AppCompatActivity {
                 // Do nothing
             }
         });
+
+        if(!isNotificationServiceEnabled()){
+            enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
+            enableNotificationListenerAlertDialog.show();
+        }
     }
 
     private class SSHLoginTask extends AsyncTask<String, Void, Boolean> {
@@ -242,5 +273,48 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
         return json;
+    }
+
+    private boolean isNotificationServiceEnabled(){
+        String pkgName = getPackageName();
+        final String flat = Settings.Secure.getString(getContentResolver(),
+                ENABLED_NOTIFICATION_LISTENERS);
+        if (!TextUtils.isEmpty(flat)) {
+            final String[] names = flat.split(":");
+            for (int i = 0; i < names.length; i++) {
+                final ComponentName cn = ComponentName.unflattenFromString(names[i]);
+                if (cn != null) {
+                    if (TextUtils.equals(pkgName, cn.getPackageName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    /**
+     * Build Notification Listener Alert Dialog.
+     * Builds the alert dialog that pops up if the user has not turned
+     * the Notification Listener Service on yet.
+     * @return An alert dialog which leads to the notification enabling screen
+     */
+    private AlertDialog buildNotificationServiceAlertDialog(){
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle(R.string.notification_listener_service);
+        alertDialogBuilder.setMessage(R.string.notification_listener_service_explanation);
+        alertDialogBuilder.setPositiveButton(R.string.yes,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        startActivity(new Intent(ACTION_NOTIFICATION_LISTENER_SETTINGS));
+                    }
+                });
+        alertDialogBuilder.setNegativeButton(R.string.no,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // If you choose to not enable the notification listener
+                        // the app. will not work as expected
+                    }
+                });
+        return(alertDialogBuilder.create());
     }
 }

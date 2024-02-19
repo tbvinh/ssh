@@ -56,7 +56,7 @@ public class VoiceCommand extends AppCompatActivity implements OnClickListener {
         // Most of the applications do not have to handle the voice settings. If the application
         // does not require a recognition in a specific language (i.e., different from the system
         // locale), the application does not need to read the voice settings.
-//        refreshVoiceSettings();
+        refreshVoiceSettings();
 //        setContentView(R.layout.activity_voice_command);
     }
     private void refreshVoiceSettings() {
